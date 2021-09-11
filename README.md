@@ -1,2 +1,2 @@
-# pymath
+# PyMath
 Python math helpers
