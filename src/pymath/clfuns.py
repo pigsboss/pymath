@@ -1,3 +1,5 @@
+# coding: utf-8
+
 """OpenCL helper functions.
 """
 
@@ -398,8 +400,8 @@ __kernel void memcopy(
     print(u'{:=^80}'.format(' Benchmark Results '))
     r_host2dev = 8*npts / (np.double(t_pull) + np.double(t_push))
     r_global   = 8*npts / np.double(t_exec)
-    print(u'{:<40}: {:.2E} \u00b1 {:.1E} GiB/s'.format('Host to Device Bandwidth', np.mean(r_host2dev)/1024**3, np.std(r_host2dev)/1024**3))
-    print(u'{:<40}: {:.2E} \u00b1 {:.1E} GiB/s'.format('Device Global Bandwidth',  np.mean(r_global)/1024**3, np.std(r_global)/1024**3))
+    print('{:<40}: {:.2E} \u00b1 {:.1E} GiB/s'.format('Host to Device Bandwidth', np.mean(r_host2dev)/1024**3, np.std(r_host2dev)/1024**3))
+    print('{:<40}: {:.2E} \u00b1 {:.1E} GiB/s'.format('Device Global Bandwidth',  np.mean(r_global)/1024**3, np.std(r_global)/1024**3))
     return np.mean(r_host2dev), np.mean(r_global)
 
 def bincount(x, weights=None, minlength=0, device=None, magic_number=7, profiling=True, verbose=True):
