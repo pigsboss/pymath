@@ -825,7 +825,7 @@ def test(device,in_vec,workers=2**9,local_size=2**8):
     exec_evt.wait()
     elapsed = 1e-9*(exec_evt.profile.end - exec_evt.profile.start)
     print("Acceleration: %f x CPU performance."%((time2-time1) / elapsed))
-    cl.enqueue_read_buffer(queue, out_vec_buf, out_vec).wait()
+    cl.enqueue_copy(queue, out_vec, out_vec_buf).wait()
     return out_vec
 
 dot_prod_kernel_fp64="""
@@ -841,7 +841,7 @@ __kernel void dot_prod(
     uint   count       = (nitems / 4) / get_global_size(0);
     uint   idx         = (is_cpu) ? get_global_id(0) * count : get_global_id(0);
     uint   stride      = (is_cpu) ? 1 : get_global_size(0);
-    double psum        = 0.0d;
+    double psum        = 0.0;
     uint   local_idx   = get_local_id(0);
 
     for( uint n = 0; n < count; n++,idx+=stride )
@@ -1080,14 +1080,14 @@ def dot_prod(a,b,device=None,numit=100):
     else:
         ws = 64
         global_work_size = compute_units * 7 * ws
-        while ((num_src_items / 4) > global_work_size) and \
-            (((num_src_items / 4) % global_work_size) != 0):
+        while ((num_src_items // 4) > global_work_size) and \
+            (((num_src_items // 4) % global_work_size) != 0):
             global_work_size += ws
-        if (num_src_items / 4) < global_work_size:
-            global_work_size = num_src_items / 4
+        if (num_src_items // 4) < global_work_size:
+            global_work_size = num_src_items // 4
         local_work_size = ws
         is_cpu = 0
-    num_groups = global_work_size / local_work_size
+    num_groups = global_work_size // local_work_size
     ctx = cl.Context([device])
     queue = cl.CommandQueue(ctx)
     mf = cl.mem_flags
@@ -1095,14 +1095,14 @@ def dot_prod(a,b,device=None,numit=100):
     dotp = cl.Kernel(prg, "dot_prod")
     a_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.float32(a))
     b_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.float32(b))
-    c_buf = cl.Buffer(ctx, mf.WRITE_ONLY, size=num_groups * 4)
+    c_buf = cl.Buffer(ctx, mf.WRITE_ONLY, num_groups * 4)
     dotp.set_args(a_buf,b_buf,c_buf,cl.LocalMemory(local_work_size * 4),\
         np.uint32(num_src_items),np.uint8(is_cpu))
     for i in range(numit):
         ev_dotp=cl.enqueue_nd_range_kernel(queue,dotp,(global_work_size,),(local_work_size,))
         ev_dotp.wait()
     c = np.empty(num_groups,dtype=np.float32)
-    cl.enqueue_read_buffer(queue,c_buf,c).wait()
+    cl.enqueue_copy(queue,c,c_buf).wait()
     return np.sum(c)
 
 def rotate(quat,vector,workers=2**8,device=None):
@@ -1175,9 +1175,9 @@ def rotate(quat,vector,workers=2**8,device=None):
         raise StandardError('Can not rotate %d vectors by %d quaternions.'%(r_size,q_size))
     exec_evt.wait()
     r_out = np.empty((3,global_size[0]),dtype='float32')
-    cl.enqueue_read_buffer(queue, r0_out_buf, r_out[0]).wait()
-    cl.enqueue_read_buffer(queue, r1_out_buf, r_out[1]).wait()
-    cl.enqueue_read_buffer(queue, r2_out_buf, r_out[2]).wait()
+    cl.enqueue_copy(queue, r_out[0], r0_out_buf).wait()
+    cl.enqueue_copy(queue, r_out[1], r1_out_buf).wait()
+    cl.enqueue_copy(queue, r_out[2], r2_out_buf).wait()
 
     preferred_multiple = cl.Kernel(prg, 'qrotate').get_work_group_info( \
         cl.kernel_work_group_info.PREFERRED_WORK_GROUP_SIZE_MULTIPLE, \
