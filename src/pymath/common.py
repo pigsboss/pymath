@@ -6,8 +6,22 @@
 
 import numpy as np
 import numexpr as ne
+from mpmath import mp
 DEPS = np.finfo(np.double).eps
 
+def print_RK4tableau_Ralston(d):
+    mp.dps=d
+    print("a2 = 0.4")
+    print("a3 ={}".format((   14-   3*mp.sqrt(5))/  16))
+    print("b31={}".format((-2889+1428*mp.sqrt(5))/1024))
+    print("b32={}".format(( 3785-1620*mp.sqrt(5))/1024))
+    print("b41={}".format((-3365+2094*mp.sqrt(5))/6040))
+    print("b42={}".format(( -975-3046*mp.sqrt(5))/2552))
+    print("b43={}".format((467040+203968*mp.sqrt(5))/240845))
+    print("g1 ={}".format((263+24*mp.sqrt(5))/1812))
+    print("g2 ={}".format((125-1000*mp.sqrt(5))/3828))
+    print("g3 ={}".format(1024*(3346+1623*mp.sqrt(5))/5924787))
+    print("g4 ={}".format((30-4*mp.sqrt(5))/123))
 def subarray(r=None,N=None,M=None):
     """Sub-array of an n-d array.
 
