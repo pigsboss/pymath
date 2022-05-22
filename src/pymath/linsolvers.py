@@ -6,6 +6,34 @@
 
 import numpy as np
 
+def two_lines_intersection(r1, u1, r2, u2):
+    """Find line-line intersections or nearest points to skew lines.
+    line 1: r = r1 + u1*t
+    line 2: r = r2 + u2*t
+
+    r1 and r2 are (N, 3) arrays.
+    u1 and u2 are (N, 3) arrays and each row represents a unit vector.
+    """
+    U1 = np.matmul(
+        np.reshape(u1,(-1,3,1)),
+        np.reshape(u1,(-1,1,3)),
+        axes=[(-2,-1),(-2,-1),(-2,-1)]
+    )+np.eye(3).reshape((1,3,3))
+    U2 = np.matmul(
+        np.reshape(u2,(-1,3,1)),
+        np.reshape(u2,(-1,1,3)),
+        axes=[(-2,-1),(-2,-1),(-2,-1)]
+    )+np.eye(3).reshape((1,3,3))
+    A = U1+U2
+    b = np.matmul(U1, np.reshape(r1,(-1,3,1)), axes=[(-2,-1),(-2,-1),(-2,-1)]) + \
+        np.matmul(U2, np.reshape(r2,(-1,3,1)), axes=[(-2,-1),(-2,-1),(-2,-1)])
+    D = np.linalg.det(A)
+    r = np.empty((D.size, 3))
+    D_is_0 = np.isclose(D, 0.)
+    r[ D_is_0, :] = np.nan
+    r[~D_is_0, :] = np.matmul(np.linalg.inv(A[~D_is_0]), b[~D_is_0]).reshape((-1,3))
+    return r
+
 def least_squares(A, b):
     """Solving overdetermined system Ax=b using least-squares.
 A is N x M coefficient matrix (N observations, M variables).
