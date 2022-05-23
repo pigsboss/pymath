@@ -15,13 +15,13 @@ def two_lines_intersection(r1, u1, r2, u2):
     u1 and u2 are (N, 3) arrays and each row represents a unit vector.
     """
     U1 = np.eye(3) - np.matmul(
-        np.reshape(u1,(-1,3,1)),
-        np.reshape(u1,(-1,1,3)),
-        axes=[(-2,-1),(-2,-1),(-2,-1)])
+        np.reshape(u1, (-1,3,1)),
+        np.reshape(u1, (-1,1,3)),
+        axes=[(-2,-1), (-2,-1), (-2,-1)])
     U2 = np.eye(3) - np.matmul(
-        np.reshape(u2,(-1,3,1)),
-        np.reshape(u2,(-1,1,3)),
-        axes=[(-2,-1),(-2,-1),(-2,-1)])
+        np.reshape(u2, (-1,3,1)),
+        np.reshape(u2, (-1,1,3)),
+        axes=[(-2,-1), (-2,-1), (-2,-1)])
     A = U1+U2
     b = np.matmul(U1, np.reshape(r1,(-1,3,1)), axes=[(-2,-1),(-2,-1),(-2,-1)]) + \
         np.matmul(U2, np.reshape(r2,(-1,3,1)), axes=[(-2,-1),(-2,-1),(-2,-1)])
