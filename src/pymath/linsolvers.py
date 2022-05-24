@@ -13,6 +13,9 @@ def two_lines_intersection(r1, u1, r2, u2):
 
     r1 and r2 are (N, 3) arrays.
     u1 and u2 are (N, 3) arrays and each row represents a unit vector.
+
+    Return r as (N, 3) array, each row represents an intersection.
+    np.nan returned if the two lines are parallel.
     """
     U1 = np.eye(3) - np.matmul(
         np.reshape(u1, (-1,3,1)),
@@ -34,12 +37,12 @@ def two_lines_intersection(r1, u1, r2, u2):
 
 def least_squares(A, b):
     """Solving overdetermined system Ax=b using least-squares.
-A is N x M coefficient matrix (N observations, M variables).
-x is M x 1 vector (M unknown parameters).
-b is N x 1 vector (N observed outcomes).
-
-Return x, x_error
-"""
+    A is N x M coefficient matrix (N observations, M variables).
+    x is M x 1 vector (M unknown parameters).
+    b is N x 1 vector (N observed outcomes).
+    
+    Return x, x_error
+    """
     n, m = np.shape(A)
     P = (np.matrix(A.T) * np.matrix(A))**-1
     x = P * np.matrix(A.T) * np.matrix(b.reshape((-1,1)))
@@ -49,13 +52,13 @@ Return x, x_error
 
 def weighted_least_squares(A, b, W=None):
     """Solving overdetermined system Ax=b using least-squares in case the observations are weighted.
-A is N x M coefficient matrix (N observations, M variables).
-x is M x 1 vector (M unknown parameters).
-b is N x 1 vector (N observed outcomes).
-W is N x N diagonal matrix (N weights for each of the N observations).
-
-Return x, x_error
-"""
+    A is N x M coefficient matrix (N observations, M variables).
+    x is M x 1 vector (M unknown parameters).
+    b is N x 1 vector (N observed outcomes).
+    W is N x N diagonal matrix (N weights for each of the N observations).
+    
+    Return x, x_error
+    """
     if W is None:
         return least_squares(A, b)
     n, m = np.shape(A)
@@ -69,15 +72,15 @@ Return x, x_error
 
 def tridiagonal(a, b, c, d, x=None):
     """Tri-diagonal system solver.
-
-|   1                     |   |   0 |   |   0 |
-| a_0  b_0  c_0           |   | x_0 |   | d_0 |
-|      a_1  b_1  c_1      | X | x_1 | = | d_1 |
-|        .    .    .      |   |   . |   |   . |
-|             .    .    . |   |   . |   |   . |
-
-Boundary condition: natural (2nd order derivative is zero).
-"""
+    
+    |   1                     |   |   0 |   |   0 |
+    | a_0  b_0  c_0           |   | x_0 |   | d_0 |
+    |      a_1  b_1  c_1      | X | x_1 | = | d_1 |
+    |        .    .    .      |   |   . |   |   . |
+    |             .    .    . |   |   . |   |   . |
+    
+    Boundary condition: natural (2nd order derivative is zero).
+    """
     n  = np.size(a)
     if np.ndim(d) == 1:
         d = np.reshape(d, (1, n))
