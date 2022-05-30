@@ -12,7 +12,7 @@ to the J2000 coordinates after rotation.
 
 Euler angles convention: Tait-Bryan angles, specifically, Z-Y-X, as
 1. rotate lab frame around Z-axis of inertial frame by angle phi,
-2. rotate lab frame around Y-axis of its own frame by angle theta,
+2. rotate lab frame around Y-axis of its own frame by angle *minus* theta,
 3. rotate lab frame around X-axis of its own frame by angle psi.
 
 Unit vector along the X-axis of the lab frame of the rigid body is also referred to as 
