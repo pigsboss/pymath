@@ -14,8 +14,11 @@ def two_lines_intersection(r1, u1, r2, u2):
     r1 and r2 are (N, 3) arrays.
     u1 and u2 are (N, 3) arrays and each row represents a unit vector.
 
-    Return r as (N, 3) array, each row represents an intersection.
-    np.nan returned if the two lines are parallel.
+    Returns:
+    r - (N, 3) array, each row represents an intersection.
+        np.nan returned if the two lines are parallel.
+    s - d1**2 + d2**2, where d1 is distance between r and line 1 and
+        d2 is distance between r and line 2.
     """
     U1 = np.eye(3) - np.matmul(
         np.reshape(u1, (-1,3,1)),
@@ -33,7 +36,9 @@ def two_lines_intersection(r1, u1, r2, u2):
     D_is_0 = np.isclose(D, 0.)
     r[ D_is_0, :] = np.nan
     r[~D_is_0, :] = np.matmul(np.linalg.inv(A[~D_is_0]), b[~D_is_0]).reshape((-1,3))
-    return r
+    s = np.sum((r1-r)**2., axis=-1) - np.sum((r-r1)*u1, axis=-1)**2. + \
+        np.sum((r2-r)**2., axis=-1) - np.sum((r-r2)*u2, axis=-1)**2.
+    return r, s
 
 def least_squares(A, b):
     """Solving overdetermined system Ax=b using least-squares.
