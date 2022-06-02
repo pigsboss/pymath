@@ -35,9 +35,13 @@ def two_lines_intersection(r1, u1, r2, u2):
     r = np.empty((D.size, 3))
     D_is_0 = np.isclose(D, 0.)
     r[ D_is_0, :] = np.nan
-    r[~D_is_0, :] = np.matmul(np.linalg.inv(A[~D_is_0]), b[~D_is_0]).reshape((-1,3))
-    s = np.sum((r1-r)**2., axis=-1) - np.sum((r-r1)*u1, axis=-1)**2. + \
-        np.sum((r2-r)**2., axis=-1) - np.sum((r-r2)*u2, axis=-1)**2.
+    r[~D_is_0, :] = np.matmul(
+        np.linalg.inv(A[~D_is_0]),
+        b[~D_is_0]).reshape((-1,3))
+    s = np.sum((r1-r)**2., axis=-1)-\
+        np.sum((r-r1)*u1, axis=-1)**2.+\
+        np.sum((r2-r)**2., axis=-1)-\
+        np.sum((r-r2)*u2, axis=-1)**2.
     return r, s
 
 def least_squares(A, b):

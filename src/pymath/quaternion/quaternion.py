@@ -136,7 +136,7 @@ def matrix(q):
 def conjugate(q):
     """Quaternion conjugate
 """
-    return np.double([q[0], -1.0*q[1], -1.0*q[2], -1.0*q[3]])
+    return np.array([q[0], -1.0*q[1], -1.0*q[2], -1.0*q[3]])
 
 def angles(quat):
     """Calculate Tait-Bryan angles from given quaternion.
