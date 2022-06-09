@@ -34,7 +34,7 @@ vmod - mode (vmin < vmod < vmax) of values.
 vstd - approximate standard deviation of values, in (0, sqrt(1/12)) for a,b > 1.
 N    - number of random values.
 """
+    a = (1./((vstd/(vmax-vmin))**2.)-4.)/8.
     m = (vmod-vmin)/(vmax-vmin)
     b = (a*(1-m)+2.*m-1)/m
-    a = (1./(vstd**2.)-4.)/8.
     return np.random.beta(a,b,N)*(vmax-vmin)+vmin
