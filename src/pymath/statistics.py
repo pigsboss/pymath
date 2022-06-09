@@ -26,14 +26,15 @@ H(X) = - sum(P(X_i) * log2(P(X_i)), i)
     pmf = cts[idx] / np.sum(cts)
     return -np.sum(pmf*np.log2(pmf))
 
-def betadist(vmin, vmax, vmod, a, N):
+def betadist(vmin, vmax, vmod, vstd, N):
     """Generate random values from a scale-and-shift beta distribution with given alpha.
 vmin - minimum of values.
 vmax - maximum of values.
 vmod - mode (vmin < vmod < vmax) of values.
-a    - alpha parameter of beta distribution.
+vstd - approximate standard deviation of values, in (0, sqrt(1/12)) for a,b > 1.
 N    - number of random values.
 """
     m = (vmod-vmin)/(vmax-vmin)
     b = (a*(1-m)+2.*m-1)/m
+    a = (1./(vstd**2.)-4.)/8.
     return np.random.beta(a,b,N)*(vmax-vmin)+vmin
