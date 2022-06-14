@@ -7,35 +7,38 @@
 import numpy as np
 import warnings
 
-def two_lines_intersection(r1, u1, r2, u2, in_dtype='float128'):
+def lines_intersection(list_of_r, list_of_u, in_dtype='float128'):
     """Find line-line intersections or nearest points to skew lines.
     line 1: r = r1 + u1*t
     line 2: r = r2 + u2*t
-
-    r1 and r2 are (N, 3) arrays.
-    u1 and u2 are (N, 3) arrays and each row represents a unit vector.
+    ...
+    
+    Each r is a (N, 3) array.
+    Each u is a (N, 3) array and each row of it represents a unit vector.
 
     Returns:
-    r - (N, 3) array, each row represents an intersection.
+    p - (N, 3) array, each row represents an intersection.
         np.nan returned if the two lines are parallel.
-    s - d1**2 + d2**2, where d1 is distance between r and line 1 and
-        d2 is distance between r and line 2.
+    s - d1**2 + d2**2 + ..., where d[i] is distance between p and the
+        i-th line.
     """
-    r1_in = r1.astype(in_dtype)
-    u1_in = u1.astype(in_dtype)
-    r2_in = r2.astype(in_dtype)
-    u2_in = u2.astype(in_dtype)
-    U1 = np.eye(3,dtype=in_dtype) - np.matmul(
-        np.reshape(u1_in, (-1,3,1)),
-        np.reshape(u1_in, (-1,1,3)),
-        axes=[(-2,-1), (-2,-1), (-2,-1)])
-    U2 = np.eye(3,dtype=in_dtype) - np.matmul(
-        np.reshape(u2_in, (-1,3,1)),
-        np.reshape(u2_in, (-1,1,3)),
-        axes=[(-2,-1), (-2,-1), (-2,-1)])
-    A = U1+U2
-    b = np.matmul(U1, np.reshape(r1_in,(-1,3,1)), axes=[(-2,-1),(-2,-1),(-2,-1)]) + \
-        np.matmul(U2, np.reshape(r2_in,(-1,3,1)), axes=[(-2,-1),(-2,-1),(-2,-1)])
+    N = len(list_of_r)
+    M = list_of_r[0].shape[0]
+    A = np.zeros((M,3,3), dtype=in_dtype)
+    b = np.zeros((M,3,1), dtype=in_dtype)
+    for i in range(N):
+        r_in = list_of_r[i].astype(in_dtype)
+        u_in = list_of_u[i].astype(in_dtype)
+        U = np.eye(3, dtype=in_dtype) - \
+            np.matmul(
+                np.reshape(u_in, (-1,3,1)),
+                np.reshape(u_in, (-1,1,3)),
+                axes=[(-2,-1), (-2,-1), (-2,-1)])
+        A[:] += U
+        b[:] += np.matmul(
+            U,
+            np.reshape(r_in, (-1,3,1)),
+            axes=[(-2,-1), (-2,-1), (-2,-1)])
     adjA = np.empty_like(A)
     adjA[:,0,0] = A[:,1,1]*A[:,2,2]-A[:,1,2]*A[:,2,1]
     adjA[:,0,1] = A[:,0,2]*A[:,2,1]-A[:,0,1]*A[:,2,2]
@@ -49,22 +52,21 @@ def two_lines_intersection(r1, u1, r2, u2, in_dtype='float128'):
     D = A[:,0,0]*adjA[:,0,0] + \
         A[:,0,1]*adjA[:,1,0] + \
         A[:,0,2]*adjA[:,2,0]
-    r = np.empty((D.size, 3), dtype=in_dtype)
+    p = np.empty((D.size, 3), dtype=in_dtype)
     D_is_0 = np.isclose(D, 0., atol=np.finfo(in_dtype).resolution**.5)
     if np.all(D_is_0):
         warnings.warn(
             "All determinants (max: {:.2E}) are close to zero.".format(
                 np.max(np.abs(D))), RuntimeWarning)
-    invA = adjA[~D_is_0]/np.reshape(D[~D_is_0],(-1,1,1))
-    r[ D_is_0, :] = np.nan
-    r[~D_is_0, :] = np.matmul(invA, b[~D_is_0]).reshape((-1,3))
-    r1mr = r1_in - r
-    r2mr = r2_in - r
-    s = np.sum(r1mr**2., axis=-1)-\
-        np.sum(r1mr*u1,  axis=-1)**2.+\
-        np.sum(r2mr**2., axis=-1)-\
-        np.sum(r2mr*u2,  axis=-1)**2.
-    return r.astype(r1.dtype), s.astype(r1.dtype)
+    invA = adjA[~D_is_0]/np.reshape(D[~D_is_0], (-1,1,1))
+    p[ D_is_0, :] = np.nan
+    p[~D_is_0, :] = np.matmul(invA, b[~D_is_0]).reshape((-1,3))
+    s = np.zeros_like(p)
+    for i in range(N):
+        rmp = list_of_r[i].astype(in_dtype)-p
+        s += np.sum(rmp**2., axis=-1) - np.sum(rmp*list_of_u[i].astype(in_dtype), axis=-1)**2.
+    out_dtype = list_of_r[0].dtype
+    return p.astype(out_dtype), s.astype(out_dtype)
 
 def least_squares(A, b):
     """Solving overdetermined system Ax=b using least-squares.
