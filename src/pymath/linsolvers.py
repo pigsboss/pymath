@@ -61,7 +61,7 @@ def lines_intersection(list_of_r, list_of_u, in_dtype='float128'):
     invA = adjA[~D_is_0]/np.reshape(D[~D_is_0], (-1,1,1))
     p[ D_is_0, :] = np.nan
     p[~D_is_0, :] = np.matmul(invA, b[~D_is_0]).reshape((-1,3))
-    s = np.zeros_like(p)
+    s = np.zeros((M,), dtype=in_dtype)
     for i in range(N):
         rmp = list_of_r[i].astype(in_dtype)-p
         s += np.sum(rmp**2., axis=-1) - np.sum(rmp*list_of_u[i].astype(in_dtype), axis=-1)**2.
