@@ -6,6 +6,26 @@ copyright: pigsboss@github
 """
 import numpy as np
 
+def spherical_random_sampling(nsamples, longitude_range=(0., 2.*np.pi), colatitude_range=(0., np.pi)):
+    """Generate random samplings on unit sphere.
+    Samples are uniformly distributed on the unit sphere per area.
+
+    Arguments:
+    nsamples is number of samples to return.
+    longitude_range (phi_min, phi_max) is range of longitude, in rad.
+    colatitude_range (theta_min, theta_max) is range of colatitude,
+    i.e., the angle between polar axis, from north (+z) to south
+    (-z), in [0, np.pi].
+
+"""
+    phi_min, phi_max     = longitude_range
+    theta_min, theta_max = colatitude_range
+    phi   = np.random.rand(nsamples) * (phi_max - phi_min) + phi_min
+    theta = np.arccos(
+        np.cos(theta_min) -
+        np.random.rand(nsamples)*(np.cos(theta_min)-np.cos(theta_max)))
+    return phi, theta
+
 def float_to_integer(X, bits=16):
     """Float-point to integer scaling.
 
